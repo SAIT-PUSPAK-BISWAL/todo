@@ -1,0 +1,100 @@
+body {
+  font-family: "Comic Sans MS", cursive, sans-serif;
+  background: #fdf6e3;
+  margin: 0;
+  padding: 0;
+}
+
+nav {
+  background: #ffcc00;
+  padding: 12px;
+  display: flex;
+  gap: 15px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+nav a {
+  color: #333;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+nav a:hover {
+  text-decoration: underline;
+}
+
+form {
+  background: #fff8b3;
+  padding: 20px;
+  margin: 20px auto;
+  max-width: 400px;
+  border-radius: 8px;
+  box-shadow: 2px 4px 8px rgba(0,0,0,0.2);
+}
+
+form input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border: none;
+  border-bottom: 2px dashed #999;
+  background: transparent;
+}
+
+/* ✅ Unified button style for all buttons */
+button {
+  background: #ffcc00;
+  color: #333;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 2px 4px 6px rgba(0,0,0,0.2);
+  transition: background 0.2s ease;
+}
+
+button:hover {
+  background: #ffdb4d;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+}
+
+li {
+  background: #fff8b3;
+  width: 180px;
+  height: 180px;
+  padding: 12px;
+  border-radius: 6px;
+  box-shadow: 2px 4px 8px rgba(0,0,0,0.3);
+  transform: rotate(-2deg);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+li:nth-child(even) {
+  transform: rotate(2deg);
+}
+
+/* ✅ Override for task list delete buttons */
+li button {
+  background: #ff6666;
+  color: white;
+  border: none;
+  padding: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: none; /* remove yellow shadow */
+}
+
+li button:hover {
+  background: #cc0000;
+}
