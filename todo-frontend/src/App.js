@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import Register from "./components/Register";
 import Login from "./components/Login";
 import TaskList from "./components/TaskList";
@@ -11,6 +17,7 @@ import API from "./services/api";
 import "./App.css";
 
 function App() {
+  const location = useLocation();
   const [tasks, setTasks] = useState([]);
   const [showFonts, setShowFonts] = useState(false);
   const [showBullets, setShowBullets] = useState(false);
@@ -22,19 +29,35 @@ function App() {
   const username = localStorage.getItem("username");
   const userId = localStorage.getItem("userId");
 
+  
   useEffect(() => {
-    if (localStorage.getItem("token")) {
-      API.get("/tasks").then(res => setTasks(res.data));
-
-      if (userId) {
-        API.get(`/auth/${userId}`).then(res => {
-          if (res.data.image) {
-            setProfileImage(`http://localhost:5000${res.data.image}`);
-          }
-        });
-      }
+    if (!localStorage.getItem("token")) {
+      return;
     }
-  }, [userId]);
+
+    API.get("/tasks")
+      .then((res) => {
+        setTasks(res.data);
+      })
+      .catch((err) => {
+        console.error("Failed to load tasks:", err.message);
+      });
+
+    if (userId) {
+      API.get(`/auth/${userId}`)
+        .then((res) => {
+          if (res.data.image) {
+            setProfileImage(
+              `${process.env.REACT_APP_API_URL || "http://localhost:5000"}${res.data.image}`
+            );
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to load profile image:", err.message);
+        });
+    }
+   }, [userId, location.pathname]);
+
 
   return (
     <>

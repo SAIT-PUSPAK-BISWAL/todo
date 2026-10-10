@@ -1,100 +1,137 @@
+
 import React, { useState } from "react";
 import API from "../services/api";
 
 export default function TaskList({ tasks, setTasks, font, bullet }) {
   const [deletingTaskId, setDeletingTaskId] = useState(null);
+  const [updatingTaskIds, setUpdatingTaskIds] = useState([]);
 
   const toggleTask = async (task) => {
+    if (updatingTaskIds.includes(task._id) || deletingTaskId === task._id) {
+      return;
+    }
+
+    setUpdatingTaskIds((ids) => [...ids, task._id]);
+
     try {
       const { data } = await API.put(`/tasks/${task._id}`, {
         completed: !task.completed,
       });
-      setTasks(tasks.map((t) => (t._id === task._id ? data : t)));
+
+      setTasks((currentTasks) =>
+        currentTasks.map((t) => (t._id === task._id ? data : t))
+      );
     } catch (err) {
       console.error("Toggle failed:", err.response?.data || err.message);
+      alert("Failed to update task. Please try again.");
+    } finally {
+      setUpdatingTaskIds((ids) =>
+        ids.filter((id) => id !== task._id)
+      );
     }
   };
 
   const deleteTask = async (id) => {
-    // trigger fade‑out
+    if (deletingTaskId !== null || updatingTaskIds.includes(id)) {
+      return;
+    }
+
     setDeletingTaskId(id);
 
-    // wait for animation to finish before actually deleting
-    setTimeout(async () => {
-      try {
-        await API.delete(`/tasks/${id}`);
-        setTasks(tasks.filter((t) => t._id !== id));
-        setDeletingTaskId(null);
-      } catch (err) {
-        console.error("Delete failed:", err.response?.data || err.message);
-      }
-    }, 500); // 👈 matches CSS transition duration
+    // Allow the fade-out animation to finish.
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    try {
+      await API.delete(`/tasks/${id}`);
+
+      setTasks((currentTasks) =>
+        currentTasks.filter((t) => t._id !== id)
+      );
+    } catch (err) {
+      console.error("Delete failed:", err.response?.data || err.message);
+      alert("Failed to delete task. Please try again.");
+    } finally {
+      setDeletingTaskId(null);
+    }
   };
 
   return (
     <div>
-      {tasks.map((task) => (
-        <div
-          key={task._id}
-          style={{
-            marginBottom: "10px",
-            border: "1px solid #ccc",
-            padding: "10px",
-            fontFamily: font,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            backgroundColor: task.completed ? "#e6ffe6" : "#fff8b3",
-            borderRadius: "6px",
-            boxShadow: "2px 4px 6px rgba(0,0,0,0.2)",
-            transition: "opacity 0.5s ease", // 👈 fade effect
-            opacity: deletingTaskId === task._id ? 0 : 1, // 👈 fade out when deleting
-          }}
-        >
-          <p
+      {tasks.map((task) => {
+        const isDeleting = deletingTaskId === task._id;
+        const isUpdating = updatingTaskIds.includes(task._id);
+
+        return (
+          <div
+            key={task._id}
             style={{
-              margin: 0,
-              textDecoration: task.completed ? "line-through" : "none",
-              color: task.completed ? "#555" : "#000",
-              fontWeight: task.completed ? "normal" : "bold",
+              marginBottom: "10px",
+              border: "1px solid #ccc",
+              padding: "10px",
+              fontFamily: font,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              backgroundColor: task.completed ? "#e6ffe6" : "#fff8b3",
+              borderRadius: "6px",
+              boxShadow: "2px 4px 6px rgba(0,0,0,0.2)",
+              transition: "opacity 0.5s ease",
+              opacity: isDeleting ? 0 : 1,
             }}
           >
-            {bullet} {task.title}
-          </p>
-
-          <div>
-            <button
-              onClick={() => toggleTask(task)}
+            <p
               style={{
-                marginRight: "10px",
-                background: task.completed ? "#4CAF50" : "#f44336",
-                color: "white",
-                border: "none",
-                padding: "6px 10px",
-                borderRadius: "4px",
-                cursor: "pointer",
+                margin: 0,
+                textDecoration: task.completed ? "line-through" : "none",
+                color: task.completed ? "#555" : "#000",
+                fontWeight: task.completed ? "normal" : "bold",
               }}
             >
-              {task.completed ? "✅ Done" : "❌ Not Done"}
-            </button>
+              {bullet} {task.title}
+            </p>
 
-            <button
-              onClick={() => deleteTask(task._id)}
-              style={{
-                background: "#ff6666",
-                color: "white",
-                border: "none",
-                padding: "6px 10px",
-                borderRadius: "4px",
-                cursor: "pointer",
-              }}
-            >
-              Delete
-            </button>
+            <div>
+              <button
+                onClick={() => toggleTask(task)}
+                disabled={isUpdating || isDeleting}
+                style={{
+                  marginRight: "10px",
+                  background: task.completed ? "#4CAF50" : "#f44336",
+                  color: "white",
+                  border: "none",
+                  padding: "6px 10px",
+                  borderRadius: "4px",
+                  cursor: isUpdating || isDeleting ? "not-allowed" : "pointer",
+                }}
+              >
+                {isUpdating
+                  ? "Updating..."
+                  : task.completed
+                    ? "✅ Done"
+                    : "❌ Not Done"}
+              </button>
+
+              <button
+                onClick={() => deleteTask(task._id)}
+                disabled={deletingTaskId !== null || isUpdating}
+                style={{
+                  background: "#ff6666",
+                  color: "white",
+                  border: "none",
+                  padding: "6px 10px",
+                  borderRadius: "4px",
+                  cursor:
+                    deletingTaskId !== null || isUpdating
+                      ? "not-allowed"
+                      : "pointer",
+                }}
+              >
+                {isDeleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
-
