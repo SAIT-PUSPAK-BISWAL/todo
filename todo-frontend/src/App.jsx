@@ -47,9 +47,10 @@ function App() {
       API.get(`/auth/${userId}`)
         .then((res) => {
           if (res.data.image) {
-            setProfileImage(
-              `${process.env.REACT_APP_API_URL || "http://localhost:5000"}${res.data.image}`
-            );
+            const apiUrl =import.meta.env.VITE_API_URL || "http://localhost:5000";
+            setProfileImage(`${apiUrl}${res.data.image}`);
+          }else{
+            setProfileImage(null);
           }
         })
         .catch((err) => {

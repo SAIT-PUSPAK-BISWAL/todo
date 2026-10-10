@@ -6,7 +6,7 @@ const MAX_SIZE = 2 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 const API_URL =
-  process.env.REACT_APP_API_URL || "http://localhost:5000";
+  import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 export default function ProfileImageUpload({ userId, onUploadSuccess }) {
   const [file, setFile] = useState(null);
